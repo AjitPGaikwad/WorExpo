@@ -16,6 +16,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.ajit.worexpo.MainActivity;
+import com.ajit.worexpo.MedicineActivity;
 import com.ajit.worexpo.PlaceOnMapFragment;
 import com.ajit.worexpo.R;
 import com.ajit.worexpo.fragment.PlacesOnMapFragment;
@@ -40,7 +41,7 @@ public class PlaceRecyclerViewAdapter extends RecyclerView.Adapter<PlaceRecycler
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.layout_place_single, parent, false);
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_place_single, parent, false);
         return new ViewHolder(itemView);
     }
 
@@ -48,16 +49,16 @@ public class PlaceRecyclerViewAdapter extends RecyclerView.Adapter<PlaceRecycler
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final Results results = myPlaces.getResults().get(position);
         holder.bind(results);
-        showOnMap(results,lat,lng);
+        //showOnMap(results,lat,lng);
         holder.linearLayoutDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                /*Intent intent = new Intent(context, MainActivity.class);
+                Intent intent = new Intent(context, MedicineActivity.class);
                 intent.putExtra("result", results);
                 intent.putExtra("lat", lat);
                 intent.putExtra("lng", lng);
-                context.startActivity(intent);*/
-                showOnMap(results,lat,lng);
+                context.startActivity(intent);
+                //showOnMap(results,lat,lng);
             }
         });
     }

@@ -106,11 +106,6 @@ public class PlacesOnMapFragment extends Fragment implements OnMapReadyCallback 
                 .alpha(1f))
                 .showInfoWindow();
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(destinationPosition));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(destinationPosition, 13.0f));
-        mMap.getUiSettings().setCompassEnabled(true);
-        mMap.getUiSettings().setZoomControlsEnabled(true);
-
         // for current
         mMap.addMarker(new MarkerOptions().position(currentPosition)
                 .title("Your Location")
@@ -118,19 +113,17 @@ public class PlacesOnMapFragment extends Fragment implements OnMapReadyCallback 
                 .alpha(1f))
                 .showInfoWindow();
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(currentPosition));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentPosition, 13.0f));
-        mMap.getUiSettings().setCompassEnabled(true);
-        mMap.getUiSettings().setZoomControlsEnabled(true);
-
         String url = getDirectionsUrl(currentPosition, destinationPosition);
 
         FetchUrl fetchUrl = new FetchUrl();
 
         fetchUrl.execute(url);
         //move map camera
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(currentPosition));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(15.0f));
+
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(destinationPosition));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(destinationPosition, 13.0f));
+        mMap.getUiSettings().setCompassEnabled(true);
+        mMap.getUiSettings().setZoomControlsEnabled(true);
     }
 
     private String getDirectionsUrl(LatLng origin, LatLng dest) {

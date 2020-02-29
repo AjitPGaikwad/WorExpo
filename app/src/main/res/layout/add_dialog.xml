@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <TextView
+        android:background="@color/colorGreen"
+        android:gravity="center"
+        android:text="Add Prescription"
+        android:textSize="16sp"
+        android:textColor="@android:color/white"
+        android:layout_width="match_parent"
+        android:layout_height="40dp">
+
+    </TextView>
+
+
+        <LinearLayout
+            android:layout_marginTop="@dimen/dimen_10"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:weightSum="1"
+            android:orientation="horizontal"
+            android:layout_width="match_parent">
+
+        <LinearLayout
+            android:id="@+id/addManually"
+            android:padding="@dimen/dimen_10"
+            android:orientation="vertical"
+            android:layout_weight="0.5"
+            android:weightSum="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent">
+            <ImageView
+                android:layout_weight="0.7"
+                android:scaleType="centerInside"
+                android:src="@drawable/manually"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"></ImageView>
+
+            <TextView
+                android:gravity="center"
+                android:layout_weight="0.3"
+                android:text="Add Manually"
+                android:layout_width="match_parent"
+                android:layout_height="40dp">
+
+            </TextView>
+
+        </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/scan"
+                android:padding="@dimen/dimen_10"
+                android:orientation="vertical"
+                android:layout_weight="0.5"
+                android:weightSum="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:src="@drawable/scan"
+                    android:layout_weight="0.7"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"></ImageView>
+
+
+                <TextView
+                    android:layout_height="40dp"
+                    android:gravity="center"
+                    android:layout_weight="0.3"
+                    android:text="Scan"
+                    android:layout_width="match_parent">
+
+                </TextView>
+
+            </LinearLayout>
+
+    </LinearLayout>
+
+
+</LinearLayout>

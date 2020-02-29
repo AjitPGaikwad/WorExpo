@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
 
     double lat = 0;
     double lng = 0;
-    private String placeType = "atm";
+    private String placeType = "pharmacy";
     private GoogleApiService googleApiService;
     private MyPlaces myPlaces;
 

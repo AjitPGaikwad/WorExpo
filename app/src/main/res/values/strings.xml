@@ -42,4 +42,10 @@
 
 
     </string-array>
+    <string name="title_activity_prescription">Prescription</string>
+    <string name="msg_no_prescription">No Prescription</string>
+    <string name="lbl_new_prescription_title">New Prescription</string>
+    <string name="lbl_edit_prescription_title">Edit Prescription</string>
+    <string name="hint_enter_medicine_name">Enter Medicine Name!</string>
+    <string name="hint_enter_quantity">Quantity</string>
 </resources>
