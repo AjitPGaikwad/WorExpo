@@ -58,7 +58,7 @@ public class PlaceRecyclerViewAdapter extends RecyclerView.Adapter<PlaceRecycler
                 intent.putExtra("lat", lat);
                 intent.putExtra("lng", lng);
                 context.startActivity(intent);
-                //showOnMap(results,lat,lng);
+                showOnMap(results,lat,lng);
             }
         });
     }
