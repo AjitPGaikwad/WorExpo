@@ -2,7 +2,6 @@ package com.ajit.worexpo.adpter;
 
 import android.content.Context;
 import android.content.Intent;
-
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,26 +11,27 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.ajit.worexpo.MainActivity;
 import com.ajit.worexpo.MedicineActivity;
-import com.ajit.worexpo.PlaceOnMapFragment;
 import com.ajit.worexpo.R;
 import com.ajit.worexpo.fragment.PlacesOnMapFragment;
 import com.ajit.worexpo.model.MyPlaces;
 import com.ajit.worexpo.model.Results;
-import com.google.android.gms.location.places.Place;
 
 
-public class PlaceRecyclerViewAdapter extends RecyclerView.Adapter<PlaceRecyclerViewAdapter.ViewHolder> {
+public class PlaceListAdapter extends RecyclerView.Adapter<PlaceListAdapter.ViewHolder> {
 
     private Context context;
     private MyPlaces myPlaces;
     private double lat, lng;
 
-    public PlaceRecyclerViewAdapter(Context context, MyPlaces myPlaces, double lat, double lng) {
+
+    public PlaceListAdapter(Context context, MyPlaces myPlaces, double lat, double lng
+    ) {
         this.context = context;
         this.myPlaces = myPlaces;
         this.lat = lat;
@@ -49,7 +49,7 @@ public class PlaceRecyclerViewAdapter extends RecyclerView.Adapter<PlaceRecycler
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final Results results = myPlaces.getResults().get(position);
         holder.bind(results);
-        showOnMap(results,lat,lng);
+
         holder.linearLayoutDetails.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -68,11 +68,12 @@ public class PlaceRecyclerViewAdapter extends RecyclerView.Adapter<PlaceRecycler
         return myPlaces.getResults().size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         public TextView name, address;
         public LinearLayout linearLayoutDetails;
         ImageView placeIV;
+        CardView singleCard;
 
         public ViewHolder(View view) {
             super(view);
@@ -86,6 +87,13 @@ public class PlaceRecyclerViewAdapter extends RecyclerView.Adapter<PlaceRecycler
             name.setText(results.getName());
             address.setText(results.getVicinity());
         }
+
+
+        @Override
+        public void onClick(View v) {
+
+        }
+
     }
 
     /*private void showOnMap(Place place){
@@ -118,4 +126,10 @@ public class PlaceRecyclerViewAdapter extends RecyclerView.Adapter<PlaceRecycler
 
         fm.beginTransaction().replace(R.id.map_frame, placeFragment).commit();
     }
+
+    public interface ItemClickListener {
+        void onClick(Results results, int position);
+    }
+
+
 }

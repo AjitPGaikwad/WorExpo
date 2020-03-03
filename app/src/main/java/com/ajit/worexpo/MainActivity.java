@@ -3,6 +3,7 @@ package com.ajit.worexpo;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.LinearSnapHelper;
@@ -27,9 +28,13 @@ import android.view.animation.AccelerateInterpolator;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.ajit.worexpo.adpter.PlaceListAdapter;
 import com.ajit.worexpo.adpter.PlaceRecyclerViewAdapter;
 import com.ajit.worexpo.adpter.PlacesRecyclerViewAdapter;
+import com.ajit.worexpo.fragment.PlaceListFragment;
+import com.ajit.worexpo.fragment.PlacesOnMapFragment;
 import com.ajit.worexpo.model.MyPlaces;
+import com.ajit.worexpo.model.Results;
 import com.ajit.worexpo.remotes.GoogleApiService;
 import com.ajit.worexpo.remotes.RetrofitBuilder;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -187,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
         urlString.append(Double.toString(latitude));
         urlString.append(",");
         urlString.append(Double.toString(longitude));
-        urlString.append("&radius=5000"); // places between 5 kilometer
+        urlString.append("&radius=2000"); // places between 5 kilometer
         urlString.append("&types=" + placeType.toLowerCase());
         urlString.append("&sensor=false&key=" + API_KEY);
 
@@ -221,7 +226,9 @@ public class MainActivity extends AppCompatActivity {
 
                     dialog.dismiss();
 
-                    setUpRecyclerView();
+                    showOnMap();
+
+                    //setUpRecyclerView();
                     //linearLayoutShowOnMap.setVisibility(View.VISIBLE);
                 }
 
@@ -439,5 +446,21 @@ public class MainActivity extends AppCompatActivity {
                 recyclerViewPlaces.setAdapter(recyclerViewAdapter);
             }
         });
+    }
+
+    private void showOnMap(){
+        FragmentManager fm = (MainActivity.this)
+                .getSupportFragmentManager();
+
+        Bundle bundle=new Bundle();
+        bundle.putSerializable("places", myPlaces);
+        bundle.putSerializable("results", myPlaces.getResults().toString());
+        bundle.putDouble("lat", lat);
+        bundle.putDouble("lng", lng);
+
+        PlaceListFragment placeFragment = new PlaceListFragment();
+        placeFragment.setArguments(bundle);
+
+        fm.beginTransaction().replace(R.id.map_frame, placeFragment).commit();
     }
 }
