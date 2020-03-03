@@ -1,11 +1,15 @@
 package com.ajit.worexpo.fragment;
 
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
@@ -14,7 +18,9 @@ import androidx.recyclerview.widget.LinearSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SnapHelper;
 
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,14 +35,17 @@ import com.ajit.worexpo.model.MyPlaces;
 import com.ajit.worexpo.model.Results;
 import com.ajit.worexpo.utils.DirectionsJSONParser;
 import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Dot;
 import com.google.android.gms.maps.model.Gap;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PatternItem;
@@ -44,6 +53,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.DirectionsApiRequest;
 import com.google.maps.model.DirectionsResult;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONObject;
 
@@ -57,6 +67,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -100,6 +112,8 @@ public class PlaceListFragment extends Fragment implements OnMapReadyCallback, P
     private String mParam1;
     private String mParam2;
 
+    int px,width,height,padding = 0;
+
 
     public PlaceListFragment() {
         // Required empty public constructor
@@ -135,6 +149,14 @@ public class PlaceListFragment extends Fragment implements OnMapReadyCallback, P
             //name = results.getName();
             //address = results.getVicinity();
         }
+
+        px = (int) (TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, 320, getResources().getDisplayMetrics()));
+
+        width=getResources().getDisplayMetrics().widthPixels;
+        height=getResources().getDisplayMetrics().heightPixels - px ;
+
+        padding=(int)(width * 0.10);
     }
 
     @Override
@@ -217,14 +239,45 @@ public class PlaceListFragment extends Fragment implements OnMapReadyCallback, P
         // for destination
         mMap.addMarker(new MarkerOptions().position(destinationPosition)
                 .title(results.getName())
-                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                //.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                .icon(BitmapDescriptorFactory.fromBitmap(
+                        createCustomMarker(getActivity(),R.drawable.pharmacy,"")))
                 .snippet(results.getVicinity())
                 .alpha(1f))
                 .showInfoWindow();
 
-      /*  if(i==0){
+        if(i==0){
             showDistance(currentPosition,destinationPosition);
-        }*/
+        }
+    }
+
+    public static Bitmap createCustomMarker(Context context, @DrawableRes int resource, String _name) {
+
+        View marker = ((LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_marker_bottom, null);
+
+        //TextView txt_name = (TextView)marker.findViewById(R.id.name);
+        //txt_name.setText(_name);
+
+        final CircleImageView markerImage = marker.findViewById(R.id.user_dp);
+
+        Picasso.get()
+                .setLoggingEnabled(true);
+        Picasso.get()
+                .load(resource)
+                .resize(50,50)
+                .into(markerImage);
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        ((Activity) context).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        marker.setLayoutParams(new ViewGroup.LayoutParams(52, ViewGroup.LayoutParams.WRAP_CONTENT));
+        marker.measure(displayMetrics.widthPixels, displayMetrics.heightPixels);
+        marker.layout(0, 0, displayMetrics.widthPixels, displayMetrics.heightPixels);
+        marker.buildDrawingCache();
+        Bitmap bitmap = Bitmap.createBitmap(marker.getMeasuredWidth(), marker.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        marker.draw(canvas);
+
+        return bitmap;
     }
 
     private void showDistance(LatLng currentPosition, LatLng destinationPosition) {
@@ -237,11 +290,41 @@ public class PlaceListFragment extends Fragment implements OnMapReadyCallback, P
         fetchUrl.execute(url);
         //move map camera
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(destinationPosition));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(destinationPosition, 13.0f));
+       /* CameraPosition cameraPosition = new CameraPosition.Builder().target(destinationPosition).zoom(14).build();
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));*/
+
+        //mMap.moveCamera(CameraUpdateFactory.newLatLng(currentPosition));
+        //mMap.animateCamera(CameraUpdateFactory.zoomTo(14.5f));
+
+        //mMap.moveCamera(CameraUpdateFactory.newLatLng(destinationPosition));
+        //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(destinationPosition, 13.0f));
         mMap.getUiSettings().setCompassEnabled(true);
         mMap.getUiSettings().setZoomControlsEnabled(true);
     }
+
+    public void zoomRoute(List<LatLng> route) {
+
+        if (mMap == null || route == null || route.isEmpty()) return;
+
+        LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
+        for (LatLng latLngPoint : route)
+            boundsBuilder.include(latLngPoint);
+
+        //int routePadding = 500;
+        LatLngBounds latLngBounds = boundsBuilder.build();
+
+
+        CameraUpdate cu= CameraUpdateFactory.newLatLngBounds(latLngBounds,width,height,200);
+
+        mMap.animateCamera(cu);
+
+       /* mMap.animateCamera(
+                CameraUpdateFactory.newLatLngBounds(latLngBounds, routePadding),
+                600,
+                null
+        );*/
+    }
+
 
     private String getDirectionsUrl(LatLng origin, LatLng dest) {
 
@@ -368,7 +451,7 @@ public class PlaceListFragment extends Fragment implements OnMapReadyCallback, P
         protected void onPostExecute(List<List<HashMap<String, String>>> result) {
 
 
-            ArrayList<LatLng> points;
+            ArrayList<LatLng> points = null;
             PolylineOptions lineOptions = null;
 
             // Traversing through all the routes
@@ -405,6 +488,7 @@ public class PlaceListFragment extends Fragment implements OnMapReadyCallback, P
                 if (polyline != null)
                     polyline.remove();
                     polyline = mMap.addPolyline(lineOptions);
+                zoomRoute(points);
 
             } else {
                 Log.d("onPostExecute", "without Polylines drawn");
@@ -427,7 +511,7 @@ public class PlaceListFragment extends Fragment implements OnMapReadyCallback, P
         final SnapHelper snapHelperCenterDefault = new LinearSnapHelper();
         snapHelperCenterDefault.attachToRecyclerView(recyclerViewPlaces);
 
-        PlaceListAdapter placeRecyclerViewAdapter = new PlaceListAdapter(getActivity(), myPlaces, lat, lng);
+        final PlaceListAdapter placeRecyclerViewAdapter = new PlaceListAdapter(getActivity(), myPlaces, lat, lng);
         recyclerViewPlaces.setAdapter(placeRecyclerViewAdapter);
 
         recyclerViewPlaces.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -439,7 +523,7 @@ public class PlaceListFragment extends Fragment implements OnMapReadyCallback, P
 
                 showPlaces(myPlaces.getResults().get(pos),pos);
                 LatLng destinationPosition = new LatLng(Double.valueOf(myPlaces.getResults().get(pos).getGeometry().getLocation().getLat()), Double.valueOf(myPlaces.getResults().get(pos).getGeometry().getLocation().getLng()));
-                //showDistance(currentPosition,destinationPosition);
+                showDistance(currentPosition,destinationPosition);
 
                /* RecyclerView.ViewHolder viewHolder = recyclerViewPlaces.findViewHolderForAdapterPosition(pos);
                 RelativeLayout rl1 = viewHolder.itemView.findViewById(R.id.rl1);*/
@@ -449,12 +533,38 @@ public class PlaceListFragment extends Fragment implements OnMapReadyCallback, P
                 }else{
                     rl1.animate().setDuration(350).scaleX(0.75f).scaleY(0.75f).setInterpolator(new AccelerateInterpolator()).start();
                 }*/
+
             }
 
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
             }
+        });
+
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+
+                final LatLng markerPosition = marker.getPosition();
+                int selected_marker = -1;
+                for (int i = 0; i < myPlaces.getResults().size(); i++) {
+                    if (markerPosition.latitude == Double.parseDouble(myPlaces.getResults().get(i).getGeometry().getLocation().getLat()) && markerPosition.longitude == Double.parseDouble(myPlaces.getResults().get(i).getGeometry().getLocation().getLng())) {
+                        selected_marker = i;
+                        break;
+                    }
+                }
+                CameraPosition cameraPosition = new CameraPosition.Builder().target(markerPosition).zoom(12).build();
+                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                placeRecyclerViewAdapter.notifyDataSetChanged();
+                recyclerViewPlaces.smoothScrollToPosition(selected_marker);
+
+                marker.showInfoWindow();
+
+                return false;
+
+            }
+
         });
 
     }
