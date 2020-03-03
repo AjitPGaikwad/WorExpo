@@ -34,9 +34,13 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Dot;
+import com.google.android.gms.maps.model.Gap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PatternItem;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.DirectionsApiRequest;
 import com.google.maps.model.DirectionsResult;
@@ -50,6 +54,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -82,6 +87,13 @@ public class PlaceListFragment extends Fragment implements OnMapReadyCallback, P
 
     RecyclerView recyclerViewPlaces;
     View view;
+
+    Polyline polyline;
+
+    private int PATTERN_GAP_LENGTH_PX = 10;  // 1
+    private Gap GAP = new Gap(PATTERN_GAP_LENGTH_PX);
+    private Dot DOT = new Dot();
+    private List<PatternItem> PATTERN_DOTTED = Arrays.asList(DOT, GAP);  // 2
 
 
     // TODO: Rename and change types of parameters
@@ -210,12 +222,13 @@ public class PlaceListFragment extends Fragment implements OnMapReadyCallback, P
                 .alpha(1f))
                 .showInfoWindow();
 
-        if(i==0){
+      /*  if(i==0){
             showDistance(currentPosition,destinationPosition);
-        }
+        }*/
     }
 
     private void showDistance(LatLng currentPosition, LatLng destinationPosition) {
+
 
         String url = getDirectionsUrl(currentPosition, destinationPosition);
 
@@ -353,6 +366,8 @@ public class PlaceListFragment extends Fragment implements OnMapReadyCallback, P
         // Executes in UI thread, after the parsing process
         @Override
         protected void onPostExecute(List<List<HashMap<String, String>>> result) {
+
+
             ArrayList<LatLng> points;
             PolylineOptions lineOptions = null;
 
@@ -377,15 +392,20 @@ public class PlaceListFragment extends Fragment implements OnMapReadyCallback, P
 
                 // Adding all the points in the route to LineOptions
                 lineOptions.addAll(points);
-                lineOptions.width(10);
+                lineOptions.width(20);
                 lineOptions.color(Color.RED);
+                lineOptions.pattern(PATTERN_DOTTED);
 
                 Log.d("onPostExecute", "onPostExecute lineoptions decoded");
             }
 
             // Drawing polyline in the Google Map for the i-th route
             if (lineOptions != null) {
-                mMap.addPolyline(lineOptions);
+
+                if (polyline != null)
+                    polyline.remove();
+                    polyline = mMap.addPolyline(lineOptions);
+
             } else {
                 Log.d("onPostExecute", "without Polylines drawn");
             }
@@ -419,7 +439,7 @@ public class PlaceListFragment extends Fragment implements OnMapReadyCallback, P
 
                 showPlaces(myPlaces.getResults().get(pos),pos);
                 LatLng destinationPosition = new LatLng(Double.valueOf(myPlaces.getResults().get(pos).getGeometry().getLocation().getLat()), Double.valueOf(myPlaces.getResults().get(pos).getGeometry().getLocation().getLng()));
-                showDistance(currentPosition,destinationPosition);
+                //showDistance(currentPosition,destinationPosition);
 
                /* RecyclerView.ViewHolder viewHolder = recyclerViewPlaces.findViewHolderForAdapterPosition(pos);
                 RelativeLayout rl1 = viewHolder.itemView.findViewById(R.id.rl1);*/

@@ -13,7 +13,7 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_height="180dp"
         android:layout_margin="5dp"
         app:cardCornerRadius="10dp">
 
@@ -76,7 +76,15 @@
                         android:layout_gravity="center"
                         android:text="Address"
                         android:textSize="12sp" />
-
+                <TextView
+                    android:paddingTop="8dp"
+                    android:paddingLeft="8dp"
+                    android:paddingRight="8dp"
+                    android:id="@+id/textViewOpenedClosed"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textSize="12sp" />
 
 
             </LinearLayout>

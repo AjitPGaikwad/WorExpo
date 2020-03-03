@@ -1,8 +1,10 @@
 package com.ajit.worexpo;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -14,14 +16,17 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
@@ -50,7 +55,9 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -96,7 +103,11 @@ public class MainActivity extends AppCompatActivity {
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            getCurrentLocation();
+            if (checkAndRequestPermissions())
+            {
+                // All permissions are granted already. Proceed ahead
+                locationService();
+            }
         }
 
     }
@@ -139,7 +150,6 @@ public class MainActivity extends AppCompatActivity {
                         lat = location.getLatitude();
                         lng = location.getLongitude();
                         getNearbyPlaces();
-
                     } else {
                         if (lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
 
@@ -192,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
         urlString.append(Double.toString(latitude));
         urlString.append(",");
         urlString.append(Double.toString(longitude));
-        urlString.append("&radius=2000"); // places between 5 kilometer
+        urlString.append("&radius=1500"); // places between 1.5 kilometer
         urlString.append("&types=" + placeType.toLowerCase());
         urlString.append("&sensor=false&key=" + API_KEY);
 
@@ -302,41 +312,136 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void getCurrentLocation() {
-        if (hasPermissions(this, PERMISSIONS)) {
-            locationService();
-            //getCurrentPlaceData();
-        } else {
-            checkPermission();
-        }
-    }
-
-    private void checkPermission() {
-        if (!hasPermissions(this, PERMISSIONS)) {
-            ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
-        }
-    }
-
-    boolean hasPermissions(Context context, String... permissions) {
-        if (context != null && permissions != null) {
-            for (String permission : permissions) {
-                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
-                    return false;
-                }
+    public boolean checkAndRequestPermissions()
+    {
+        // Check which permissions are granted
+        List<String> listPermissionsNeeded = new ArrayList<>();
+        for (String perm : PERMISSIONS)
+        {
+            if (ContextCompat.checkSelfPermission(this, perm) != PackageManager.PERMISSION_GRANTED)
+            {
+                listPermissionsNeeded.add(perm);
             }
         }
+
+        // Ask for non-granted permissions
+        if (!listPermissionsNeeded.isEmpty())
+        {
+            ActivityCompat.requestPermissions(this,
+                    listPermissionsNeeded.toArray(new String[listPermissionsNeeded.size()]),
+                    PERMISSION_ALL
+            );
+            return false;
+        }
+
+        // App has all permissions. Proceed ahead
         return true;
     }
 
 
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PERMISSION_ALL) {
-            if (resultCode == RESULT_OK) {
-                locationService();
-                //getCurrentPlaceData();
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == PERMISSION_ALL)
+        {
+            HashMap<String, Integer> permissionResults = new HashMap<>();
+            int deniedCount = 0;
+
+            // Gather permission grant results
+            for (int i=0; i<grantResults.length; i++)
+            {
+                // Add only permissions which are denied
+                if (grantResults[i] == PackageManager.PERMISSION_DENIED)
+                {
+                    permissionResults.put(permissions[i], grantResults[i]);
+                    deniedCount++;
+                }
+            }
+
+            // Check if all permissions are granted
+            if (deniedCount == 0)
+            {
+                // Proceed ahead with the app
+               locationService();
+            }
+            // Atleast one or all permissions are denied
+            else
+            {
+                for (Map.Entry<String, Integer> entry : permissionResults.entrySet())
+                {
+                    String permName = entry.getKey();
+                    int permResult = entry.getValue();
+
+                    // permission is denied (this is the first time, when "never ask again" is not checked)
+                    // so ask again explaining the usage of permission
+                    // shouldShowRequestPermissionRationale will return true
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(this, permName))
+                    {
+                        // Show dialog of explanation
+                        showDialog("", "This app needs Location and Storage permissions to work wihout any issues and problems.",
+                                "Yes, Grant permissions",
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        dialogInterface.dismiss();
+                                        checkAndRequestPermissions();
+                                    }
+                                },
+                                "No, Exit app", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        dialogInterface.dismiss();
+                                        finish();
+                                    }
+                                }, false);
+                    }
+                    //permission is denied (and never ask again is  checked)
+                    //shouldShowRequestPermissionRationale will return false
+                    else
+                    {
+                        // Ask user to go to settings and manually allow permissions
+                        showDialog("", "You have denied some permissions to the app. Please allow all permissions at [Setting] > [Permissions] screen",
+                                "Go to Settings",
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        dialogInterface.dismiss();
+                                        // Go to app settings
+                                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                                Uri.fromParts("package", getPackageName(), null));
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        startActivity(intent);
+                                        finish();
+                                    }
+                                },
+                                "No, Exit app", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        dialogInterface.dismiss();
+                                        finish();
+                                    }
+                                }, false);
+                        break;
+                    }
+                }
             }
         }
+    }
+
+    public AlertDialog showDialog(String title, String msg, String positiveLabel,
+                                  DialogInterface.OnClickListener positiveOnClick,
+                                  String negativeLabel, DialogInterface.OnClickListener negativeOnClick,
+                                  boolean isCancelAble)
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(title);
+        builder.setCancelable(isCancelAble);
+        builder.setMessage(msg);
+        builder.setPositiveButton(positiveLabel, positiveOnClick);
+        builder.setNegativeButton(negativeLabel, negativeOnClick);
+
+        AlertDialog alert = builder.create();
+        alert.show();
+        return alert;
     }
 
     private void setUpRecyclerView() {

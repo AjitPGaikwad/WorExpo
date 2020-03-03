@@ -68,9 +68,9 @@ public class PlaceListAdapter extends RecyclerView.Adapter<PlaceListAdapter.View
         return myPlaces.getResults().size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
-        public TextView name, address;
+        public TextView name, address, openClosed;
         public LinearLayout linearLayoutDetails;
         ImageView placeIV;
         CardView singleCard;
@@ -79,6 +79,7 @@ public class PlaceListAdapter extends RecyclerView.Adapter<PlaceListAdapter.View
             super(view);
             name = view.findViewById(R.id.textViewPlaceName);
             address = view.findViewById(R.id.textViewAddress);
+            openClosed = view.findViewById(R.id.textViewOpenedClosed);
             linearLayoutDetails = view.findViewById(R.id.linearLayoutDetails);
             placeIV = view.findViewById(R.id.placeImageView);
         }
@@ -86,6 +87,17 @@ public class PlaceListAdapter extends RecyclerView.Adapter<PlaceListAdapter.View
         public void bind(Results results) {
             name.setText(results.getName());
             address.setText(results.getVicinity());
+            if(results.getOpeningHours()!=null){
+                boolean openedClosed = results.getOpeningHours().getOpenNow();
+                if(openedClosed == true){
+                    openClosed.setText("Open");
+                }else{
+                    openClosed.setText("Closed");
+                }
+            }
+
+
+
         }
 
 
